@@ -12,6 +12,17 @@
       "item": [
         {
           "name": "1 Create post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst data = pm.response.json();\r\n\r\npm.test(\"Response has an id\", function () {\r\n    pm.expect(data).to.have.property(\"id\");\r\n});\r\n\r\npm.test(\"id is a number\", function () {\r\n    pm.expect(data.id).to.be.a(\"number\");\r\n});\r\n\r\npm.test(\"userId matches the environment\", function () {\r\n    const expectedUser = Number(pm.environment.get(\"userId\"));\r\n    pm.expect(data.userId).to.equal(expectedUser);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -22,7 +33,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"title\": \"My first post\",\r\n  \"body\": \"I am learning Postman\",\r\n  \"userId\": 1\r\n}",
+              "raw": "{\r\n  \"title\": \"Post number {{$randomInt}}\",\r\n  \"body\": \"Created at {{$timestamp}}\",\r\n  \"userId\": {{userId}}\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -43,6 +54,17 @@
         },
         {
           "name": "2 Read post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\npm.test(\"Response time is below 1000 ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(1000);\r\n});\r\n\r\npm.test(\"Content-Type is JSON\", function () {\r\n    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r\n});\r\nconst data = pm.response.json();\r\n\r\npm.test(\"Post id is 1\", function () {\r\n    pm.expect(data.id).to.equal(1);\r\n});\r\n\r\npm.test(\"Post has all four fields\", function () {\r\n    pm.expect(data).to.have.property(\"userId\");\r\n    pm.expect(data).to.have.property(\"id\");\r\n    pm.expect(data).to.have.property(\"title\");\r\n    pm.expect(data).to.have.property(\"body\");\r\n});\r\n\r\npm.test(\"Data types are correct\", function () {\r\n    pm.expect(data.id).to.be.a(\"number\");\r\n    pm.expect(data.title).to.be.a(\"string\");\r\n});\r\n\r\npm.test(\"Title is not empty\", function () {\r\n    pm.expect(data.title).to.not.equal(\"\");\r\n});\r\nconsole.log(\"Title is:\", data.title);\r\nconsole.log(\"Response time is:\", pm.response.responseTime);\r\nconsole.log(\"Full body:\", data);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -147,6 +169,17 @@
       "item": [
         {
           "name": "GetRequestDay2Param",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const posts = pm.response.json();\r\n\r\npm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    pm.expect(posts).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"There are 10 posts\", function () {\r\n    pm.expect(posts).to.have.lengthOf(10);\r\n});\r\n\r\npm.test(\"Every post belongs to the selected user\", function () {\r\n    const expectedUser = Number(pm.environment.get(\"userId\"));\r\n    posts.forEach(function (post) {\r\n        pm.expect(post.userId).to.equal(expectedUser);\r\n    });\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -216,6 +249,35 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "GetPostNotFound",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Body is an empty object\", function () {\r\n    pm.expect(pm.response.json()).to.eql({});\r\n});\r\n\r\npm.test(\"Response time is below 1000 ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(1000);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                "9999"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -252,7 +314,7 @@
             "header": [
               {
                 "key": "X-Student-Name",
-                "value": "Ujjwal"
+                "value": "{{studentName}}"
               }
             ],
             "url": {
@@ -442,15 +504,20 @@
       ]
     }
   ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Collection check: response time is below 2000 ms\", function () {\r",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": ""
-    },
-    {
-      "key": "userId",
-      "value": ""
-    },
     {
       "key": "echoUrl",
       "value": ""

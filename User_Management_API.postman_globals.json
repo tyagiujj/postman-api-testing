@@ -1,0 +1,15 @@
+{
+	"id": "6af05347-8ab4-49d6-8af4-29e92d731813",
+	"values": [
+		{
+			"key": "studentName",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"name": "User_Management_API Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2026-10-07T16:32:17.521Z",
+	"_postman_exported_using": "Postman/12.31.0"
+}
